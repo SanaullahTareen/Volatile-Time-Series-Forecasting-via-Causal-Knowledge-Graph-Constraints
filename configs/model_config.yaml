@@ -1,0 +1,50 @@
+# Model Configuration for Neuro-Symbolic Forecasting
+# System 1: Neural Perception Layer (LSTM)
+
+model:
+  type: "LSTM"
+  shared: true  # One model, all 50 stocks
+
+lstm:
+  input_size: 1
+  hidden_size: 64
+  num_layers: 2
+  dropout: 0.2
+  batch_first: true
+
+output_layer:
+  type: "Linear"
+  output_size: 1
+
+training:
+  optimizer: "Adam"
+  learning_rate: 0.001
+  weight_decay: 0.0
+  epochs: 15
+  batch_size: 64
+  early_stopping_patience: 3
+
+data:
+  sequence_length: 30  # 30-day look-back window
+  forecast_horizon: 1   # Predict next 1 day
+  train_split: 0.70
+  val_split: 0.15
+  test_split: 0.15
+  normalization: "MinMaxScaler"
+  scaler_range: [0, 1]
+
+hardware:
+  device: "cuda"
+  multi_gpu: true
+  gpus: 2
+  mixed_precision: false
+
+paths:
+  model_save: "models/neural_checkpoint.pth"
+  scaler_save: "models/scaler.pkl"
+  best_model: "models/multi_stock_model.pth"
+
+monitoring:
+  log_frequency: 5  # Log every 5 epochs
+  save_best: true
+  best_metric: "val_loss"

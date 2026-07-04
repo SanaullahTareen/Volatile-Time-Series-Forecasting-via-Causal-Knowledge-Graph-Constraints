@@ -1,0 +1,58 @@
+# Knowledge Graph Configuration for Symbolic Seam
+# System 2: Symbolic Logic Layer (Constraints)
+
+constraints:
+  price_bounds:
+    type: "relative_to_mean"
+    min_multiplier: 0.95   # 5% below mean
+    max_multiplier: 1.05   # 5% above mean
+    description: "Price cannot deviate >5% from historical mean"
+
+  rate_of_change:
+    type: "daily_change_limit"
+    max_daily_change_pct: 0.05  # 5% max change per day
+    description: "Circuit breaker: limit 5% move in single day"
+
+  market_hours:
+    type: "trading_hours"
+    enabled: false
+    market_open: "09:30"
+    market_close: "16:00"
+    timezone: "America/New_York"
+
+  trading_halts:
+    type: "blackout_dates"
+    enabled: false
+    holidays: ["2024-01-01", "2024-07-04", "2024-12-25"]
+    description: "NYSE closed on holidays"
+
+solver:
+  type: "QP"
+  backend: "OSQP"
+  timeout_ms: 2
+  verbose: false
+  max_iterations: 100
+
+constraint_enforcement:
+  method: "hard"  # Hard constraints (feasibility guaranteed)
+  fallback: "clamp"  # If QP fails, clamp to bounds
+  projection_type: "l2"  # L2 norm minimization (closest point)
+
+paths:
+  kg_save: "models/kg_rules_50.pkl"
+  bounds_save: "models/bounds.json"
+
+stocks:
+  count: 50
+  list: ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "JPM", "V", "JNJ", 
+         "WMT", "XOM", "NVDA", "META", "PG", "KO", "DIS", "BAC", 
+         "HD", "MA", "PFE", "CSCO", "INTC", "VZ", "ADBE", "NFLX", 
+         "CRM", "ABT", "T", "MRK", "PEP", "AVGO", "COST", "TMO", 
+         "ACN", "NKE", "MCD", "LLY", "DHR", "TXN", "NEE", "UPS", 
+         "PM", "QCOM", "HON", "UNH", "LOW", "IBM", "GE", "CAT", "BA", "AMD"]
+
+stress_test:
+  black_swan_enabled: true
+  shock_magnitude: 0.50  # 50% price spike
+  test_period: "2020-03-01:2020-03-31"  # COVID crash
+  measure_violations: true
